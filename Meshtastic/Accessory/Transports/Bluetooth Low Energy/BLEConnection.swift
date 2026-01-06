@@ -7,6 +7,9 @@
 
 import Foundation
 @preconcurrency import CoreBluetooth
+#if canImport(UIKit)
+import UIKit
+#endif
 import OSLog
 import MeshtasticProtobufs
 
@@ -483,24 +486,80 @@ class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
 		self.connection = connection
 	}
 	
+	// See "Core Bluetooth Background Processing for iOS Apps": https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html
+	// "Apps woken up for any Bluetooth-related events should process them and return as quickly as possible so that the app can be suspended again."
+	// If the CBPeripheralDelegate peripheral(...) call returns, the app may be suspended again.
+	// Therefore, if we enqueue any work with Task { ... } (so that we can use an async actor), we have to make sure it runs even though the call returns.
+	// To do this, we use a pattern of UIApplication.shared.beginBackgroundTask and endBackgroundTask to request that the app not be suspended yet until the newly enqueued Task gets a chance to run!
+
 	// MARK: CBPeripheralDelegate
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-		Task { await connection?.didDiscoverServices(error: error) }
+		#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLEConnectionDelegate.didDiscoverServices") { }
+		#endif
+
+		Task {
+			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+			defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+			#endif
+
+			await connection?.didDiscoverServices(error: error)
+		}
 	}
 	
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-		Task { await connection?.didDiscoverCharacteristicsFor(service: service, error: error) }
+		#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLEConnectionDelegate.didDiscoverCharacteristicsFor") { }
+		#endif
+
+		Task {
+			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+			defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+			#endif
+
+			await connection?.didDiscoverCharacteristicsFor(service: service, error: error)
+		}
 	}
 	
 	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-		Task { await connection?.didUpdateValueFor(characteristic: characteristic, error: error) }
-	}
+		#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLEConnectionDelegate.didUpdateValueFor") { }
+		#endif
+
+		Task {
+			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+			defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+			#endif
+
+			await connection?.didUpdateValueFor(characteristic: characteristic, error: error)
+        }
+    }
 	
 	func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
-		Task { await connection?.didWriteValueFor(characteristic: characteristic, error: error) }
+		#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLEConnectionDelegate.didWriteValueFor") { }
+		#endif
+
+		Task {
+			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+			defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+			#endif
+
+			await connection?.didWriteValueFor(characteristic: characteristic, error: error)
+		}
 	}
 	
 	func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
-		Task { await connection?.didReadRSSI(RSSI: RSSI, error: error) }
+		#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLEConnectionDelegate.didReadRSSI") { }
+		#endif
+
+		Task {
+			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+			defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+			#endif
+
+			await connection?.didReadRSSI(RSSI: RSSI, error: error)
+		}
 	}
 }
