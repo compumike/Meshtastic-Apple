@@ -7,6 +7,9 @@
 
 import Foundation
 @preconcurrency import CoreBluetooth
+#if canImport(UIKit)
+import UIKit
+#endif
 import SwiftUI
 import OSLog
 
@@ -223,7 +226,17 @@ class BLETransport: Transport {
 		if let connection = self.activeConnection {
 			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
 			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
+
+			// Use beginBackgroundTask/endBackgroundTask to keep the app from being suspended before the async Task runs. (See BLEConnection for more details.)
+			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+			let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLETransport.handlePeripheralDisconnect") { }
+			#endif
+
 			Task {
+				#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+				defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+				#endif
+
 				if await connection.peripheral.identifier == peripheral.identifier {
 					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"), shouldReconnect: true)
 					self.connectionDidDisconnect(fromPeripheral: peripheral)
@@ -262,7 +275,17 @@ class BLETransport: Transport {
 		} else if let activeConnection = self.activeConnection {
 			// Inform the active connection that there was an error and it should disconnect
 			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Disconnecting the active connection.")
+
+			// Use beginBackgroundTask/endBackgroundTask to keep the app from being suspended before the async Task runs. (See BLEConnection for more details.)
+			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+			let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLETransport.handlePeripheralDisconnectError") { }
+			#endif
+
 			Task {
+				#if canImport(UIKit) && !targetEnvironment(macCatalyst)
+				defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+				#endif
+
 				try? await activeConnection.disconnect(withError: error, shouldReconnect: shouldReconnect)
 				self.connectionDidDisconnect(fromPeripheral: peripheral)
 			}
