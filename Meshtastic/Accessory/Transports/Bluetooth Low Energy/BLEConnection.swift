@@ -495,12 +495,21 @@ class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
 	// MARK: CBPeripheralDelegate
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
 		#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLEConnectionDelegate.didDiscoverServices") { }
+		let backgroundTaskName = "BLEConnectionDelegate.didDiscoverServices"
+		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: backgroundTaskName) {
+			Logger.transport.debug("[BGTask] expiration reached: \(backgroundTaskName)")
+		}
+		Logger.transport.debug("[BGTask] started: \(backgroundTaskName)")
 		#endif
 
 		Task {
 			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-			defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+			defer {
+				DispatchQueue.main.async {
+					Logger.transport.debug("[BGTask] finished: \(backgroundTaskName)")
+					UIApplication.shared.endBackgroundTask(backgroundTaskId)
+				}
+			}
 			#endif
 
 			await connection?.didDiscoverServices(error: error)
@@ -509,12 +518,21 @@ class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
 	
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
 		#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLEConnectionDelegate.didDiscoverCharacteristicsFor") { }
+		let backgroundTaskName = "BLEConnectionDelegate.didDiscoverCharacteristicsFor"
+		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: backgroundTaskName) {
+			Logger.transport.debug("[BGTask] expiration reached: \(backgroundTaskName)")
+		}
+		Logger.transport.debug("[BGTask] started: \(backgroundTaskName)")
 		#endif
 
 		Task {
 			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-			defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+			defer {
+				DispatchQueue.main.async {
+					Logger.transport.debug("[BGTask] finished: \(backgroundTaskName)")
+					UIApplication.shared.endBackgroundTask(backgroundTaskId)
+				}
+			}
 			#endif
 
 			await connection?.didDiscoverCharacteristicsFor(service: service, error: error)
@@ -523,26 +541,44 @@ class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
 	
 	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
 		#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLEConnectionDelegate.didUpdateValueFor") { }
+		let backgroundTaskName = "BLEConnectionDelegate.didUpdateValueFor"
+		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: backgroundTaskName) {
+			Logger.transport.debug("[BGTask] expiration reached: \(backgroundTaskName)")
+		}
+		Logger.transport.debug("[BGTask] started: \(backgroundTaskName)")
 		#endif
 
 		Task {
 			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-			defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+			defer {
+				DispatchQueue.main.async {
+					Logger.transport.debug("[BGTask] finished: \(backgroundTaskName)")
+					UIApplication.shared.endBackgroundTask(backgroundTaskId)
+				}
+			}
 			#endif
 
 			await connection?.didUpdateValueFor(characteristic: characteristic, error: error)
-        }
-    }
+		}
+	}
 	
 	func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
 		#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLEConnectionDelegate.didWriteValueFor") { }
+		let backgroundTaskName = "BLEConnectionDelegate.didWriteValueFor"
+		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: backgroundTaskName) {
+			Logger.transport.debug("[BGTask] expiration reached: \(backgroundTaskName)")
+		}
+		Logger.transport.debug("[BGTask] started: \(backgroundTaskName)")
 		#endif
 
 		Task {
 			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-			defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+			defer {
+				DispatchQueue.main.async {
+					Logger.transport.debug("[BGTask] finished: \(backgroundTaskName)")
+					UIApplication.shared.endBackgroundTask(backgroundTaskId)
+				}
+			}
 			#endif
 
 			await connection?.didWriteValueFor(characteristic: characteristic, error: error)
@@ -551,12 +587,21 @@ class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
 	
 	func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
 		#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLEConnectionDelegate.didReadRSSI") { }
+		let backgroundTaskName = "BLEConnectionDelegate.didReadRSSI"
+		let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: backgroundTaskName) {
+			Logger.transport.debug("[BGTask] expiration reached: \(backgroundTaskName)")
+		}
+		Logger.transport.debug("[BGTask] started: \(backgroundTaskName)")
 		#endif
 
 		Task {
 			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-			defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+			defer {
+				DispatchQueue.main.async {
+					Logger.transport.debug("[BGTask] finished: \(backgroundTaskName)")
+					UIApplication.shared.endBackgroundTask(backgroundTaskId)
+				}
+			}
 			#endif
 
 			await connection?.didReadRSSI(RSSI: RSSI, error: error)

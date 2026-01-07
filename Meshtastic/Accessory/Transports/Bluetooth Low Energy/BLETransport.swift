@@ -229,12 +229,21 @@ class BLETransport: Transport {
 
 			// Use beginBackgroundTask/endBackgroundTask to keep the app from being suspended before the async Task runs. (See BLEConnection for more details.)
 			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-			let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLETransport.handlePeripheralDisconnect") { }
+			let backgroundTaskName = "BLETransport.handlePeripheralDisconnect"
+			let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: backgroundTaskName) {
+				Logger.transport.debug("[BGTask] expiration reached: \(backgroundTaskName)")
+			}
+			Logger.transport.debug("[BGTask] started: \(backgroundTaskName)")
 			#endif
 
 			Task {
 				#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-				defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+				defer {
+					DispatchQueue.main.async {
+						Logger.transport.debug("[BGTask] finished: \(backgroundTaskName)")
+						UIApplication.shared.endBackgroundTask(backgroundTaskId)
+					}
+				}
 				#endif
 
 				if await connection.peripheral.identifier == peripheral.identifier {
@@ -278,12 +287,21 @@ class BLETransport: Transport {
 
 			// Use beginBackgroundTask/endBackgroundTask to keep the app from being suspended before the async Task runs. (See BLEConnection for more details.)
 			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-			let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "BLETransport.handlePeripheralDisconnectError") { }
+			let backgroundTaskName = "BLETransport.handlePeripheralDisconnectError"
+			let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: backgroundTaskName) {
+				Logger.transport.debug("[BGTask] expiration reached: \(backgroundTaskName)")
+			}
+			Logger.transport.debug("[BGTask] started: \(backgroundTaskName)")
 			#endif
 
 			Task {
 				#if canImport(UIKit) && !targetEnvironment(macCatalyst)
-				defer { DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(backgroundTaskId) } }
+				defer {
+					DispatchQueue.main.async {
+						Logger.transport.debug("[BGTask] finished: \(backgroundTaskName)")
+						UIApplication.shared.endBackgroundTask(backgroundTaskId)
+					}
+				}
 				#endif
 
 				try? await activeConnection.disconnect(withError: error, shouldReconnect: shouldReconnect)
