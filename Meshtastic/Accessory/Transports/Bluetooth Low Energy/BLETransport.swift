@@ -231,16 +231,16 @@ class BLETransport: Transport {
 			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
 			let backgroundTaskName = "BLETransport.handlePeripheralDisconnect"
 			let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: backgroundTaskName) {
-				Logger.transport.debug("[BGTask] expiration reached: \(backgroundTaskName)")
+				Logger.transport.error("[BGTask] expiration reached: \(backgroundTaskName)")
 			}
-			Logger.transport.debug("[BGTask] started: \(backgroundTaskName)")
+			// Logger.transport.debug("[BGTask] started: \(backgroundTaskName)")
 			#endif
 
 			Task {
 				#if canImport(UIKit) && !targetEnvironment(macCatalyst)
 				defer {
 					DispatchQueue.main.async {
-						Logger.transport.debug("[BGTask] finished: \(backgroundTaskName)")
+						// Logger.transport.debug("[BGTask] finished: \(backgroundTaskName)")
 						UIApplication.shared.endBackgroundTask(backgroundTaskId)
 					}
 				}
@@ -289,16 +289,16 @@ class BLETransport: Transport {
 			#if canImport(UIKit) && !targetEnvironment(macCatalyst)
 			let backgroundTaskName = "BLETransport.handlePeripheralDisconnectError"
 			let backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: backgroundTaskName) {
-				Logger.transport.debug("[BGTask] expiration reached: \(backgroundTaskName)")
+				Logger.transport.error("[BGTask] expiration reached: \(backgroundTaskName)")
 			}
-			Logger.transport.debug("[BGTask] started: \(backgroundTaskName)")
+			// Logger.transport.debug("[BGTask] started: \(backgroundTaskName)")
 			#endif
 
 			Task {
 				#if canImport(UIKit) && !targetEnvironment(macCatalyst)
 				defer {
 					DispatchQueue.main.async {
-						Logger.transport.debug("[BGTask] finished: \(backgroundTaskName)")
+						// Logger.transport.debug("[BGTask] finished: \(backgroundTaskName)")
 						UIApplication.shared.endBackgroundTask(backgroundTaskId)
 					}
 				}
