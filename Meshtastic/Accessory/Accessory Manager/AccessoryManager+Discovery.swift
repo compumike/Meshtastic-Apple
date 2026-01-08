@@ -52,12 +52,7 @@ extension AccessoryManager {
 							existing.rssi = newDevice.rssi
 							self.devices[index] = existing
 						} else {
-							// This is a new device, add it to our list if we are in the foreground
-							if !(self.isInBackground) {
-								self.devices.append(newDevice)
-							} else {
-								Logger.transport.debug("🔎 [Discovery] Found a new device but not in the foreground, not adding to our list: peripheral \(newDevice.name)")
-							}
+							self.devices.append(newDevice)
 						}
 						
 						if self.shouldAutomaticallyConnectToPreferredPeripheral,
@@ -75,6 +70,14 @@ extension AccessoryManager {
 					
 					case .deviceReportedRssi(let deviceId, let newRssi):
 						updateDevice(deviceId: deviceId, key: \.rssi, value: newRssi)
+
+						// If we see RSSI for the preferred device while idle, attempt auto-connect
+						if self.shouldAutomaticallyConnectToPreferredPeripheral,
+						   UserDefaults.autoconnectOnDiscovery,
+						   !self.isConnected, !self.isConnecting,
+						   deviceId.uuidString == UserDefaults.preferredPeripheralId {
+							self.connectToPreferredDevice()
+						}
 					}
 				} catch {
 					break
