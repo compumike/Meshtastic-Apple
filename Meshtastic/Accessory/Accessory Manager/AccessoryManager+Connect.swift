@@ -52,7 +52,7 @@ extension AccessoryManager {
 				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id, privacy: .public)")
 				do {
 					let connection: Connection
-					if let providedConnection = withConnection {
+					if let providedConnection = withConnection, await providedConnection.isConnected {
 						connection = providedConnection
 					} else {
 						connection = try await transport.connect(to: device)
@@ -213,6 +213,14 @@ extension AccessoryManager {
 		do {
 			try await connectionStepper?.run()
 			Logger.transport.debug("🔗 [Connect] ConnectionStepper completed.")
+
+			// Ensure we're still connected (catches disconnects that happen in the middle of connection steps)
+			if !(await self.activeConnection?.connection.isConnected ?? false) {
+				Logger.transport.error("🔗 [Connect] Disconnected during connection steps. Resetting to discovering.")
+				try await self.closeConnection()
+				updateState(.discovering)
+				self.lastConnectionError = AccessoryError.connectionFailed("Disconnected during connection steps")
+			}
 		} catch {
 			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error)")
 			try await self.closeConnection()
@@ -373,6 +381,11 @@ actor SequentialSteps {
 	func executeWithTimeout<ReturnType>(stepNumber: Int, timeout: Duration, operation: @escaping @Sendable () async throws -> ReturnType) -> Task<ReturnType, Error> {
 		return Task {
 			try await withThrowingTaskGroup(of: ReturnType.self) { group -> ReturnType in
+				defer {
+					// Always cancel, even if we hit a timeout or an error.
+					group.cancelAll()
+				}
+
 				group.addTask(operation: operation)
 				group.addTask {
 					try await _Concurrency.Task.sleep(for: timeout)
@@ -381,7 +394,6 @@ actor SequentialSteps {
 				guard let success = try await group.next() else {
 					throw SequentialStepError.timeout(stepNumber: stepNumber, afterWaiting: timeout)
 				}
-				group.cancelAll()
 				return success
 			}
 		}
